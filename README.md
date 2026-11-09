@@ -1,5 +1,10 @@
 # RuoYi-Vue UI 自动化测试
 
+[![UI 自动化测试](https://github.com/xy-b612/ruoyi-ui-test/actions/workflows/ui-test.yml/badge.svg)](https://github.com/xy-b612/ruoyi-ui-test/actions/workflows/ui-test.yml)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Playwright](https://img.shields.io/badge/Playwright-1.64-2EAD33)
+![pytest](https://img.shields.io/badge/pytest-9.2-0A9EDC)
+
 > 基于 **Playwright + pytest** 的 Web UI 自动化测试项目，覆盖若依后台管理系统的**登录**、**用户管理**、**角色管理**三大模块，共 **14 条用例**。
 >
 > 采用 **Page Object Model** 分层设计，支持 **Allure 可视化报告**与**失败自动截图**。
@@ -107,6 +112,28 @@ captcha = get_captcha(uuid)          # redis: captcha_codes:{uuid}
 
 ---
 
+## 🔄 持续集成
+
+每次 push 到 `main`（或提 PR）都会自动触发 GitHub Actions，**从零搭建一套完整的被测环境后跑完 14 条用例**：
+
+```
+MySQL 5.7 + Redis 6 容器
+        ↓
+导入 RuoYi 初始化 SQL（utf8mb4）
+        ↓
+Maven 打包 → 启动后端 :8080 → 健康检查
+        ↓
+npm install → 启动前端 :8081 → 健康检查
+        ↓
+安装 Playwright Chromium → pytest 执行 14 条用例
+        ↓
+上传 Allure 结果（always）+ 失败截图（failure）
+```
+
+被测系统本身也是每次运行现拉现编译的（后端 `RuoYi-Vue@springboot2`、前端 `RuoYi-Vue2`），保证测试跑在干净、可复现的环境上。
+
+---
+
 ## 🚀 快速开始
 
 ### 环境要求
@@ -147,6 +174,7 @@ allure open ./allure-report
 | Element UI 的 `el-select` 只读，无法直接 `fill` | 先点击展开，再选中下拉项 |
 | 用例失败后数据残留在数据库 | 将「创建成功」的标记时机提前到提交动作之后，而非断言通过之后 |
 | Windows 控制台 GBK 编码，`print` 含 emoji 导致 pytest `INTERNALERROR` | 日志统一使用 ASCII 标记 |
+| CI 中只有**中文菜单**定位失败，登录等纯英文用例正常 | 通过失败截图发现侧边栏文字是 `ç³»ç»Ÿç®¡ç` 乱码，定位到 MySQL 5.7 默认字符集为 latin1、SQL 文件又无 `SET NAMES`，中文被二次编码。导入时显式指定 `utf8mb4` 并重建库，同时增加中文自检 SQL 提前暴露问题 |
 
 ---
 
