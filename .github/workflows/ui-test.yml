@@ -78,6 +78,11 @@ jobs:
 
       - name: 启动后端并等待就绪
         run: |
+          # RuoYi 的 logback 把日志固定写到 /home/ruoyi/logs，
+          # runner 用户默认没有该目录，Logback 初始化失败会导致应用起不来
+          sudo mkdir -p /home/ruoyi/logs
+          sudo chown -R "$USER" /home/ruoyi
+
           cd ruoyi-backend
           nohup java -jar ruoyi-admin/target/ruoyi-admin.jar > backend.log 2>&1 &
           for i in $(seq 1 60); do
