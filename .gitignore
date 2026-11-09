@@ -1,0 +1,25 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ---------- pytest ----------
+.pytest_cache/
+
+# ---------- 测试产物（每次跑都会变，不入库） ----------
+allure-results/
+allure-report/
+reports/
+*.png
+
+# ---------- 本地草稿 / 学习笔记（保留在本地，不推送到 GitHub） ----------
+daily_study/
+复盘/
+
+# ---------- IDE / 系统 ----------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
