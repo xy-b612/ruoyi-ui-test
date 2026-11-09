@@ -3,6 +3,7 @@ import time
 import os
 from playwright.sync_api import sync_playwright, expect
 
+from config import HEADLESS
 from pages.login_page import LoginPage
 from pages.user_page import UserPage
 from pages.role_page import RolePage
@@ -13,7 +14,7 @@ from utils.captcha import get_captcha
 def browser():
     """整个测试会话前启动一次浏览器"""
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=HEADLESS)
         yield browser
         browser.close()
 

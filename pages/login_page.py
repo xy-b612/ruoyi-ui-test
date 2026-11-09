@@ -1,6 +1,8 @@
 import re
 from playwright.sync_api import Page, expect
 
+from config import BASE_URL
+
 
 class LoginPage:
     """登录页"""
@@ -15,7 +17,7 @@ class LoginPage:
 
     def goto(self):
         """打开登录页"""
-        self.page.goto("http://localhost:8081/login")
+        self.page.goto(f"{BASE_URL}/login")
 
     def login(self, username: str, password: str, captcha: str):
         """完整的登录操作"""
