@@ -58,10 +58,28 @@ jobs:
       # ---------- 2. 初始化数据库 ----------
       - name: 导入初始化 SQL
         run: |
-          docker exec -i ${{ job.services.mysql.id }} \
-            mysql -uroot -ppassword ry-vue < ruoyi-backend/sql/ry_20260417.sql
-          docker exec -i ${{ job.services.mysql.id }} \
-            mysql -uroot -ppassword ry-vue < ruoyi-backend/sql/quartz.sql
+          MYSQL_ID=${{ job.services.mysql.id }}
+
+          # MySQL 5.7 镜像默认字符集是 latin1，而 RuoYi 的 SQL 文件是 UTF-8
+          # 且没有 SET NAMES / DEFAULT CHARSET 声明。不改的话中文会被"二次编码"，
+          # 库里存成 ç³»ç»Ÿç®¡ç 这种乱码，页面上的"系统管理"菜单直接定位不到。
+          #   ① 重建库，显式指定 utf8mb4
+          docker exec -i "$MYSQL_ID" mysql -uroot -ppassword -e \
+            'DROP DATABASE IF EXISTS `ry-vue`; CREATE DATABASE `ry-vue` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;'
+
+          #   ② 导入时让客户端也用 utf8mb4
+          docker exec -i "$MYSQL_ID" \
+            mysql -uroot -ppassword --default-character-set=utf8mb4 ry-vue \
+            < ruoyi-backend/sql/ry_20260417.sql
+          docker exec -i "$MYSQL_ID" \
+            mysql -uroot -ppassword --default-character-set=utf8mb4 ry-vue \
+            < ruoyi-backend/sql/quartz.sql
+
+          #   ③ 中文自检：读不出"系统管理"就说明字符集还是错的，提前失败，
+          #      不要等到 15 分钟后才在 UI 用例里报"菜单找不到"
+          docker exec -i "$MYSQL_ID" \
+            mysql -uroot -ppassword --default-character-set=utf8mb4 ry-vue \
+            -e "SELECT menu_id, menu_name FROM sys_menu WHERE menu_name = '系统管理';"
           echo "数据库初始化完成"
 
       # ---------- 3. 启动后端 ----------
